@@ -1,12 +1,13 @@
 from flask import Flask, render_template, flash
 from flask_wtf import FlaskForm
 #from flask_ckeditor import CKEditor, CKEditorField
-from wtforms.fields.simple import EmailField, StringField, SubmitField
+from wtforms.fields.simple import EmailField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email
 from flask_bootstrap import Bootstrap5
 import smtplib
 import os
 from dotenv import load_dotenv
+from email_validator import validate_email, EmailNotValidError
 
 load_dotenv()
 
@@ -21,11 +22,13 @@ class EmailForm(FlaskForm):
     name = StringField(label="Name", validators=[DataRequired()])
     email = EmailField(label='Email', validators=[DataRequired(), Email()])
     phone = StringField(label='Phone')
-    message = StringField(label="Leave your message", validators=[DataRequired()])
+    message = TextAreaField(label="Leave your message",
+                          render_kw={"rows": 10, "cols": 50, "placeholder": "Enter text"},
+                          validators=[DataRequired()])
     submit = SubmitField(label="Send Message")
 
 
-@app.route('/', methods=['GET','POST'])
+@app.route('/')
 def home():
     return render_template('index.html')
 
@@ -34,7 +37,7 @@ def project():
     return render_template('project.html')
 
 
-@app.route('/contact')
+@app.route('/contact', methods=['GET','POST'])
 def contact():
     form = EmailForm()
     if form.validate_on_submit():
